@@ -12,7 +12,7 @@ public class UsuarioDAO {
     public List<UsuarioTO> findAll() {
         List<UsuarioTO> lista = new ArrayList<>();
 
-        String sql = "SELECT id, nome, email, senha, data_nascimento FROM USUARIO";
+        String sql = "SELECT id, nome, email, senha, data_nascimento FROM tb_usuario";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -22,7 +22,7 @@ public class UsuarioDAO {
                 UsuarioTO u = new UsuarioTO(
                         rs.getInt("id"),
                         rs.getString("nome"),
-                        rs.getDate("data_nascimento"),
+                        rs.getDate("data_nascimento").toLocalDate(),
                         rs.getString("email"),
                         rs.getString("senha")
                 );
@@ -42,28 +42,35 @@ public class UsuarioDAO {
     // Criar usuário / salvar usuário
     public UsuarioTO save(UsuarioTO usuario) {
 
-        String sql = "INSERT INTO USUARIO (nome, email, senha, data_nascimento) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO tb_usuario (nome, data_nascimento, email, senha) " +
+                "VALUES (?, ?, ?, ?) RETURNING id INTO ?";
 
-        try (Connection conn = ConnectionFactory.abrirConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = ConnectionFactory.abrirConexao()) {
+
+            // OraclePreparedStatement é necessário para usar RETURNING
+            oracle.jdbc.OraclePreparedStatement stmt =
+                    (oracle.jdbc.OraclePreparedStatement) conn.prepareStatement(sql);
 
             stmt.setString(1, usuario.getNome());
-            stmt.setString(2, usuario.getEmail());
-            stmt.setString(3, usuario.getSenha());
-            stmt.setDate(4, new java.sql.Date(usuario.getDataDeNascimento().getTime()));
+            stmt.setDate(2, java.sql.Date.valueOf(usuario.getDataDeNascimento()));
+            stmt.setString(3, usuario.getEmail());
+            stmt.setString(4, usuario.getSenha());
+
+            // Registrar parâmetro de retorno
+            stmt.registerReturnParameter(5, java.sql.Types.INTEGER);
 
             stmt.executeUpdate();
 
-            // Recuperando ID gerado automaticamente
-            ResultSet rs = stmt.getGeneratedKeys();
+            ResultSet rs = stmt.getReturnResultSet();
             if (rs.next()) {
                 usuario.setId(rs.getInt(1));
             }
 
-            System.out.println("Usuário cadastrado: " + usuario.getNome());
+            System.out.println("Usuário cadastrado com ID: " + usuario.getId());
             return usuario;
 
         } catch (SQLException e) {
+            System.err.println("Erro ao salvar usuário!");
             e.printStackTrace();
             return null;
         }
@@ -73,7 +80,7 @@ public class UsuarioDAO {
     // Atualizar por id
     public UsuarioTO update(UsuarioTO usuario) {
 
-        String sql = "UPDATE USUARIO SET nome = ?, email = ?, senha = ?, data_nascimento = ? WHERE id = ?";
+        String sql = "UPDATE tb_usuario SET nome = ?, email = ?, senha = ?, data_nascimento = ? WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -81,7 +88,7 @@ public class UsuarioDAO {
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
             stmt.setString(3, usuario.getSenha());
-            stmt.setDate(4, new java.sql.Date(usuario.getDataDeNascimento().getTime()));
+            stmt.setDate(4, Date.valueOf(usuario.getDataDeNascimento())); // LocalDate -> SQL
             stmt.setInt(5, usuario.getId());
 
             int linhas = stmt.executeUpdate();
@@ -95,6 +102,7 @@ public class UsuarioDAO {
             return null;
 
         } catch (SQLException e) {
+            System.err.println("Erro ao atualizar usuário!");
             e.printStackTrace();
             return null;
         }
@@ -104,7 +112,7 @@ public class UsuarioDAO {
     // Deletar (por id)
     public boolean delete(int id) {
 
-        String sql = "DELETE FROM USUARIO WHERE id = ?";
+        String sql = "DELETE FROM tb_usuario WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -122,6 +130,7 @@ public class UsuarioDAO {
             return false;
 
         } catch (SQLException e) {
+            System.err.println("Erro ao remover usuário!");
             e.printStackTrace();
             return false;
         }
@@ -131,7 +140,7 @@ public class UsuarioDAO {
     // Login
     public UsuarioTO login(String email, String senha) {
 
-        String sql = "SELECT id, nome, email, senha, data_nascimento FROM USUARIO WHERE email = ? AND senha = ?";
+        String sql = "SELECT id, nome, email, senha, data_nascimento FROM tb_usuario WHERE email = ? AND senha = ?";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -145,16 +154,17 @@ public class UsuarioDAO {
                 UsuarioTO usuario = new UsuarioTO(
                         rs.getInt("id"),
                         rs.getString("nome"),
-                        rs.getDate("data_nascimento"),
+                        rs.getDate("data_nascimento").toLocalDate(),
                         rs.getString("email"),
                         rs.getString("senha")
                 );
 
-                System.out.println("Login ok: " + email);
+                System.out.println("Login OK: " + email);
                 return usuario;
             }
 
         } catch (SQLException e) {
+            System.err.println("Erro ao realizar login!");
             e.printStackTrace();
         }
 
