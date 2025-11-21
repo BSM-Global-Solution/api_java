@@ -1,4 +1,9 @@
 *
+!mvnw
+!.mvn/**
+!pom.xml
+!src/**
+!Dockerfile
 !target/*-runner
 !target/*-runner.jar
 !target/lib/*
