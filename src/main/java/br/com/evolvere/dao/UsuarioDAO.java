@@ -8,11 +8,11 @@ import java.util.List;
 
 public class UsuarioDAO {
 
-    // LISTAR TODOS
+    // Listar todos
     public List<UsuarioTO> findAll() {
         List<UsuarioTO> lista = new ArrayList<>();
 
-        String sql = "SELECT nome, email, senha, data_nascimento FROM PACIENTE";
+        String sql = "SELECT id, nome, email, senha, data_nascimento FROM USUARIO";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -20,6 +20,7 @@ public class UsuarioDAO {
 
             while (rs.next()) {
                 UsuarioTO u = new UsuarioTO(
+                        rs.getInt("id"),
                         rs.getString("nome"),
                         rs.getDate("data_nascimento"),
                         rs.getString("email"),
@@ -37,13 +38,14 @@ public class UsuarioDAO {
         return lista;
     }
 
-    // SALVAR
+
+    // Criar usuário / salvar usuário
     public UsuarioTO save(UsuarioTO usuario) {
 
-        String sql = "INSERT INTO PACIENTE (nome, email, senha, data_nascimento) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO USUARIO (nome, email, senha, data_nascimento) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
@@ -51,8 +53,14 @@ public class UsuarioDAO {
             stmt.setDate(4, new java.sql.Date(usuario.getDataDeNascimento().getTime()));
 
             stmt.executeUpdate();
-            System.out.println("Usuário cadastrado: " + usuario.getNome());
 
+            // Recuperando ID gerado automaticamente
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                usuario.setId(rs.getInt(1));
+            }
+
+            System.out.println("Usuário cadastrado: " + usuario.getNome());
             return usuario;
 
         } catch (SQLException e) {
@@ -61,27 +69,29 @@ public class UsuarioDAO {
         }
     }
 
-    // ATUALIZAR (baseado no email — chave lógica)
+
+    // Atualizar por id
     public UsuarioTO update(UsuarioTO usuario) {
 
-        String sql = "UPDATE PACIENTE SET nome = ?, senha = ?, data_nascimento = ? WHERE email = ?";
+        String sql = "UPDATE USUARIO SET nome = ?, email = ?, senha = ?, data_nascimento = ? WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, usuario.getNome());
-            stmt.setString(2, usuario.getSenha());
-            stmt.setDate(3, new java.sql.Date(usuario.getDataDeNascimento().getTime()));
-            stmt.setString(4, usuario.getEmail());
+            stmt.setString(2, usuario.getEmail());
+            stmt.setString(3, usuario.getSenha());
+            stmt.setDate(4, new java.sql.Date(usuario.getDataDeNascimento().getTime()));
+            stmt.setInt(5, usuario.getId());
 
             int linhas = stmt.executeUpdate();
 
             if (linhas > 0) {
-                System.out.println("Usuário atualizado: " + usuario.getEmail());
+                System.out.println("Usuário atualizado: ID " + usuario.getId());
                 return usuario;
             }
 
-            System.out.println("Nenhum usuário encontrado com email: " + usuario.getEmail());
+            System.out.println("Nenhum usuário encontrado com ID: " + usuario.getId());
             return null;
 
         } catch (SQLException e) {
@@ -90,24 +100,25 @@ public class UsuarioDAO {
         }
     }
 
-    // DELETAR (por email)
-    public boolean delete(String email) {
 
-        String sql = "DELETE FROM PACIENTE WHERE email = ?";
+    // Deletar (por id)
+    public boolean delete(int id) {
+
+        String sql = "DELETE FROM USUARIO WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, email);
+            stmt.setInt(1, id);
 
             int linhas = stmt.executeUpdate();
 
             if (linhas > 0) {
-                System.out.println("Usuário removido: " + email);
+                System.out.println("Usuário removido: ID " + id);
                 return true;
             }
 
-            System.out.println("Usuário não encontrado para remoção: " + email);
+            System.out.println("Usuário não encontrado para remoção: ID " + id);
             return false;
 
         } catch (SQLException e) {
@@ -116,10 +127,11 @@ public class UsuarioDAO {
         }
     }
 
-    // LOGIN
+
+    // Login
     public UsuarioTO login(String email, String senha) {
 
-        String sql = "SELECT nome, email, senha, data_nascimento FROM PACIENTE WHERE email = ? AND senha = ?";
+        String sql = "SELECT id, nome, email, senha, data_nascimento FROM USUARIO WHERE email = ? AND senha = ?";
 
         try (Connection conn = ConnectionFactory.abrirConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -131,6 +143,7 @@ public class UsuarioDAO {
 
             if (rs.next()) {
                 UsuarioTO usuario = new UsuarioTO(
+                        rs.getInt("id"),
                         rs.getString("nome"),
                         rs.getDate("data_nascimento"),
                         rs.getString("email"),
