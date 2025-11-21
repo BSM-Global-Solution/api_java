@@ -39,7 +39,28 @@ public class UsuarioDAO {
     }
 
 
-    // Criar usuário / salvar usuário
+    // Verificar se e-mail já existe
+    public boolean emailExists(String email) {
+        String sql = "SELECT 1 FROM tb_usuario WHERE email = ?";
+
+        try (Connection conn = ConnectionFactory.abrirConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar email!");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    // Criar usuário
     public UsuarioTO save(UsuarioTO usuario) {
 
         String sql = "INSERT INTO tb_usuario (nome, data_nascimento, email, senha) " +
@@ -47,7 +68,6 @@ public class UsuarioDAO {
 
         try (Connection conn = ConnectionFactory.abrirConexao()) {
 
-            // OraclePreparedStatement é necessário para usar RETURNING
             oracle.jdbc.OraclePreparedStatement stmt =
                     (oracle.jdbc.OraclePreparedStatement) conn.prepareStatement(sql);
 
@@ -56,7 +76,6 @@ public class UsuarioDAO {
             stmt.setString(3, usuario.getEmail());
             stmt.setString(4, usuario.getSenha());
 
-            // Registrar parâmetro de retorno
             stmt.registerReturnParameter(5, java.sql.Types.INTEGER);
 
             stmt.executeUpdate();
@@ -88,7 +107,7 @@ public class UsuarioDAO {
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
             stmt.setString(3, usuario.getSenha());
-            stmt.setDate(4, Date.valueOf(usuario.getDataDeNascimento())); // LocalDate -> SQL
+            stmt.setDate(4, Date.valueOf(usuario.getDataDeNascimento()));
             stmt.setInt(5, usuario.getId());
 
             int linhas = stmt.executeUpdate();
@@ -109,7 +128,7 @@ public class UsuarioDAO {
     }
 
 
-    // Deletar (por id)
+    // Remover
     public boolean delete(int id) {
 
         String sql = "DELETE FROM tb_usuario WHERE id = ?";
@@ -126,7 +145,7 @@ public class UsuarioDAO {
                 return true;
             }
 
-            System.out.println("Usuário não encontrado para remoção: ID " + id);
+            System.out.println("Usuário não encontrado: ID " + id);
             return false;
 
         } catch (SQLException e) {
@@ -151,16 +170,13 @@ public class UsuarioDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                UsuarioTO usuario = new UsuarioTO(
+                return new UsuarioTO(
                         rs.getInt("id"),
                         rs.getString("nome"),
                         rs.getDate("data_nascimento").toLocalDate(),
                         rs.getString("email"),
                         rs.getString("senha")
                 );
-
-                System.out.println("Login OK: " + email);
-                return usuario;
             }
 
         } catch (SQLException e) {
@@ -168,7 +184,6 @@ public class UsuarioDAO {
             e.printStackTrace();
         }
 
-        System.out.println("Login falhou: " + email);
         return null;
     }
 }
