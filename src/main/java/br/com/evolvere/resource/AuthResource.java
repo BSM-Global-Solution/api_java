@@ -24,13 +24,13 @@ public class AuthResource {
     private final AutenticacaoEmailBO authBO = new AutenticacaoEmailBO();
     private final UsuarioBO usuarioBO = new UsuarioBO();
 
-    // ------------ DTOs usados apenas aqui ------------ //
+    // DTOs usados apenas aqui
 
     public static class RegistroDTO {
         public String nome;
         public String email;
         public String senha;
-        public String dataNascimento; // "yyyy-MM-dd"
+        public String dataNascimento;
     }
 
     public static class ConfirmarCodigoDTO {
@@ -41,15 +41,19 @@ public class AuthResource {
         public String codigo;
     }
 
-    // ------------ Endpoints ------------ //
+    public static class ReenviarCodigoDTO {
+        public String email;
+    }
+
+    // ------------------- Endpoints -------------------
 
     // Passo 1: gerar código e enviar e-mail
     @POST
     @Path("/registrar")
     public Response registrar(RegistroDTO dto) {
         try {
-            // Opcional: checar se email já existe
-            if (usuarioBO.login(dto.email, dto.senha) != null) {
+            // Verifica se email já está cadastrado como usuário
+            if (usuarioBO.emailJaExiste(dto.email)) {
                 return Response.status(Response.Status.CONFLICT)
                         .entity(Map.of("erro", "E-mail já cadastrado"))
                         .build();
@@ -57,18 +61,51 @@ public class AuthResource {
 
             AutenticacaoEmailTO auth = authBO.gerarERegistrarCodigo(dto.email, "CRIACAO_CONTA", 15);
 
-            // Aqui entra seu serviço de e-mail em Java.
-            // Por enquanto só vamos logar:
+            // Aqui entra seu serviço de e-mail (no seu caso, o front vai usar EmailJS)
             System.out.println("Código de verificação para " + dto.email + ": " + auth.getCodigo());
 
             Map<String, String> resp = new HashMap<>();
             resp.put("mensagem", "Código enviado para o e-mail informado.");
+            resp.put("codigo", auth.getCodigo()); // front usa esse código com EmailJS
             return Response.ok(resp).build();
 
         } catch (SQLException e) {
             e.printStackTrace();
             return Response.serverError()
                     .entity(Map.of("erro", "Falha ao gerar código de autenticação"))
+                    .build();
+        }
+    }
+
+    // NOVO: Reenviar código
+    @POST
+    @Path("/reenviar-codigo")
+    public Response reenviarCodigo(ReenviarCodigoDTO dto) {
+        try {
+            // Se o email já está cadastrado como usuário, não faz sentido reenviar código de criação
+            if (usuarioBO.emailJaExiste(dto.email)) {
+                return Response.status(Response.Status.CONFLICT)
+                        .entity(Map.of("erro", "E-mail já cadastrado"))
+                        .build();
+            }
+
+            // Gera novo código e salva na tb_autenticacao_email
+            AutenticacaoEmailTO auth = authBO.reenviarCodigo(dto.email, "CRIACAO_CONTA", 15);
+
+            // Log para debug
+            System.out.println("Reenvio - código de verificação para " + dto.email + ": " + auth.getCodigo());
+
+            // Devolve o código pro front usar no EmailJS
+            Map<String, String> resp = new HashMap<>();
+            resp.put("mensagem", "Novo código gerado com sucesso.");
+            resp.put("codigo", auth.getCodigo());
+
+            return Response.ok(resp).build();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError()
+                    .entity(Map.of("erro", "Falha ao reenviar código de autenticação"))
                     .build();
         }
     }
