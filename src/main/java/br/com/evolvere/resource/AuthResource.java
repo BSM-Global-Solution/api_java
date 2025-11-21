@@ -77,7 +77,7 @@ public class AuthResource {
         }
     }
 
-    // NOVO: Reenviar código
+    // Reenviar código
     @POST
     @Path("/reenviar-codigo")
     public Response reenviarCodigo(ReenviarCodigoDTO dto) {
