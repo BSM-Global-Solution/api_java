@@ -42,6 +42,10 @@ public class UsuarioBO {
         return usuarioDAO.update(usuario);
     }
 
+    public boolean emailJaExiste(String email) {
+        return usuarioDAO.emailExists(email);
+    }
+
     public boolean delete(int id) {
         return usuarioDAO.delete(id);
     }
