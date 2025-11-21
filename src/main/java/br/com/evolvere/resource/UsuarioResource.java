@@ -53,13 +53,12 @@ public class UsuarioResource {
     }
 
 
-    // Atualizar por e-mail
-
+    // Atualizar por id
     @PUT
-    @Path("/usuarios/{email}")
-    public Response atualizarUsuario(@PathParam("email") String email, UsuarioTO usuario) {
+    @Path("/usuarios/{id}")
+    public Response atualizarUsuario(@PathParam("id") int id, UsuarioTO usuario) {
         try {
-            usuario.setEmail(email); // Define o email vindo da URL
+            usuario.setId(id); // Define o id vindo da URL
 
             UsuarioTO usuarioAtualizado = usuarioBO.update(usuario);
 
@@ -79,12 +78,12 @@ public class UsuarioResource {
     }
 
 
-    // Remover (por email)
+    // Remover (por id)
     @DELETE
-    @Path("/usuarios/{email}")
-    public Response removerUsuario(@PathParam("email") String email) {
+    @Path("/usuarios/{id}")
+    public Response removerUsuario(@PathParam("id") int id) {
         try {
-            boolean removido = usuarioBO.delete(email);
+            boolean removido = usuarioBO.delete(id);
 
             if (removido) {
                 return Response.noContent().build();
