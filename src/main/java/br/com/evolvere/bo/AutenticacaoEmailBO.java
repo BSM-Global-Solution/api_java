@@ -28,6 +28,13 @@ public class AutenticacaoEmailBO {
         return dao.inserir(email, codigo, tipo, minutosExpiracao);
     }
 
+    // Reenvia um novo código (basicamente gera outro e grava)
+    public AutenticacaoEmailTO reenviarCodigo(String email, String tipo, int minutosExpiracao) throws SQLException {
+        // Se quiser, aqui você poderia invalidar os códigos antigos não usados desse email/tipo
+        // ex: dao.invalidarCodigosNaoUsados(email, tipo);
+        return gerarERegistrarCodigo(email, tipo, minutosExpiracao);
+    }
+
     // Valida o código (email + código + tipo)
     public AutenticacaoEmailTO validarCodigo(String email, String codigo, String tipo) throws Exception {
         AutenticacaoEmailTO to = dao.buscarAtivoPorEmailCodigoTipo(email, codigo, tipo);
