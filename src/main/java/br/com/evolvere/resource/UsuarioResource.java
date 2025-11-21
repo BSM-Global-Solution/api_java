@@ -20,81 +20,78 @@ public class UsuarioResource {
     @Path("/usuarios")
     public Response listarUsuarios() {
         try {
-            List<UsuarioTO> usuarios = usuarioBO.findAll();
-            return Response.ok(usuarios).build();
+            return Response.ok(usuarioBO.findAll()).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"erro\": \"Falha ao buscar usuários\"}")
-                    .build();
+            return Response.serverError().entity("{\"erro\": \"Falha ao buscar usuários\"}").build();
         }
     }
 
 
-    // Criar usuários
+    // Criar usuário
     @POST
     @Path("/usuarios")
     public Response criarUsuario(UsuarioTO usuario) {
         try {
-            UsuarioTO usuarioSalvo = usuarioBO.save(usuario);
+            UsuarioTO criado = usuarioBO.save(usuario);
+            return Response.status(Response.Status.CREATED).entity(criado).build();
 
-            if (usuarioSalvo != null) {
-                return Response.status(Response.Status.CREATED).entity(usuarioSalvo).build();
-            } else {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"mensagem\": \"Não foi possível criar o usuário\"}")
-                        .build();
-            }
+        } catch (RuntimeException ex) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity("{\"erro\": \"" + ex.getMessage() + "\"}")
+                    .build();
 
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+            return Response.serverError()
                     .entity("{\"erro\": \"Falha ao criar usuário\"}")
                     .build();
         }
     }
 
 
-    // Atualizar por id
+    // Atualizar usuário
     @PUT
     @Path("/usuarios/{id}")
     public Response atualizarUsuario(@PathParam("id") int id, UsuarioTO usuario) {
         try {
-            usuario.setId(id); // Define o id vindo da URL
+            usuario.setId(id);
+            UsuarioTO atualizado = usuarioBO.update(usuario);
 
-            UsuarioTO usuarioAtualizado = usuarioBO.update(usuario);
-
-            if (usuarioAtualizado != null) {
-                return Response.ok(usuarioAtualizado).build();
-            } else {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("{\"mensagem\": \"Usuário não encontrado\"}")
-                        .build();
+            if (atualizado != null) {
+                return Response.ok(atualizado).build();
             }
 
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"mensagem\": \"Usuário não encontrado\"}")
+                    .build();
+
+        } catch (RuntimeException ex) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity("{\"erro\": \"" + ex.getMessage() + "\"}")
+                    .build();
+
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+            return Response.serverError()
                     .entity("{\"erro\": \"Falha ao atualizar usuário\"}")
                     .build();
         }
     }
 
 
-    // Remover (por id)
+    // Remover usuário
     @DELETE
     @Path("/usuarios/{id}")
     public Response removerUsuario(@PathParam("id") int id) {
         try {
-            boolean removido = usuarioBO.delete(id);
-
-            if (removido) {
+            if (usuarioBO.delete(id)) {
                 return Response.noContent().build();
-            } else {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("{\"mensagem\": \"Usuário não encontrado\"}")
-                        .build();
             }
 
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"mensagem\": \"Usuário não encontrado\"}")
+                    .build();
+
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+            return Response.serverError()
                     .entity("{\"erro\": \"Falha ao remover usuário\"}")
                     .build();
         }
@@ -106,10 +103,7 @@ public class UsuarioResource {
     @Path("/login")
     public Response login(UsuarioTO credenciais) {
         try {
-            UsuarioTO usuario = usuarioBO.login(
-                    credenciais.getEmail(),
-                    credenciais.getSenha()
-            );
+            UsuarioTO usuario = usuarioBO.login(credenciais.getEmail(), credenciais.getSenha());
 
             if (usuario != null) {
                 return Response.ok(usuario).build();
@@ -120,7 +114,7 @@ public class UsuarioResource {
                     .build();
 
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+            return Response.serverError()
                     .entity("{\"erro\": \"Falha no processo de login\"}")
                     .build();
         }
