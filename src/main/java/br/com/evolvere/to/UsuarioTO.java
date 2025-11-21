@@ -1,20 +1,19 @@
 package br.com.evolvere.to;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class UsuarioTO {
-    // Atributos
+
     private int id;
     private String nome;
-    private Date dataDeNascimento;
+    private LocalDate dataDeNascimento;
     private String email;
     private String senha;
 
-    // Construtores
     public UsuarioTO() {}
 
-    // Construtor usado quando os dados já vêm do banco (com ID)
-    public UsuarioTO(int id, String nome, Date dataDeNascimento, String email, String senha) {
+    // Construtor com ID (usado quando vem do BD)
+    public UsuarioTO(int id, String nome, LocalDate dataDeNascimento, String email, String senha) {
         this.id = id;
         this.nome = nome;
         this.dataDeNascimento = dataDeNascimento;
@@ -22,15 +21,15 @@ public class UsuarioTO {
         this.senha = senha;
     }
 
-    // Construtor usado para criar o usuário sem ID (antes de salvar)
-    public UsuarioTO(String nome, Date dataDeNascimento, String email, String senha) {
+    // Construtor sem ID (para criar antes de salvar)
+    public UsuarioTO(String nome, LocalDate dataDeNascimento, String email, String senha) {
         this.nome = nome;
         this.dataDeNascimento = dataDeNascimento;
         this.email = email;
         this.senha = senha;
     }
 
-    // Getters e Setters
+    // Getters e setters
     public int getId() {
         return id;
     }
@@ -47,11 +46,11 @@ public class UsuarioTO {
         this.nome = nome;
     }
 
-    public Date getDataDeNascimento() {
+    public LocalDate getDataDeNascimento() {
         return dataDeNascimento;
     }
 
-    public void setDataDeNascimento(Date dataDeNascimento) {
+    public void setDataDeNascimento(LocalDate dataDeNascimento) {
         this.dataDeNascimento = dataDeNascimento;
     }
 
@@ -71,7 +70,6 @@ public class UsuarioTO {
         this.senha = senha;
     }
 
-    // toString
     @Override
     public String toString() {
         return "UsuarioTO{" +
