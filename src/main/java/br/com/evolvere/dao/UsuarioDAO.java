@@ -38,7 +38,6 @@ public class UsuarioDAO {
         return lista;
     }
 
-
     // Verificar se e-mail já existe
     public boolean emailExists(String email) {
         String sql = "SELECT 1 FROM tb_usuario WHERE email = ?";
@@ -59,34 +58,54 @@ public class UsuarioDAO {
         }
     }
 
+    // Verificar se ID já existe
+    public boolean idExists(int id) {
+        String sql = "SELECT 1 FROM tb_usuario WHERE id = ?";
+
+        try (Connection conn = ConnectionFactory.abrirConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar ID!");
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     // Criar usuário
     public UsuarioTO save(UsuarioTO usuario) {
 
-        String sql = "INSERT INTO tb_usuario (nome, data_nascimento, email, senha) " +
-                "VALUES (?, ?, ?, ?) RETURNING id INTO ?";
+        String sql = "INSERT INTO tb_usuario (id, nome, data_nascimento, email, senha) " +
+                "VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = ConnectionFactory.abrirConexao()) {
+        try (Connection conn = ConnectionFactory.abrirConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            oracle.jdbc.OraclePreparedStatement stmt =
-                    (oracle.jdbc.OraclePreparedStatement) conn.prepareStatement(sql);
+            // 1. Gerar ID aleatório de 6 dígitos e garantir que é único
+            int idGerado = gerarIdUnico(conn);
+            usuario.setId(idGerado);
 
-            stmt.setString(1, usuario.getNome());
-            stmt.setDate(2, java.sql.Date.valueOf(usuario.getDataDeNascimento()));
-            stmt.setString(3, usuario.getEmail());
-            stmt.setString(4, usuario.getSenha());
+            // 2. Preencher parâmetros
+            stmt.setInt(1, usuario.getId());
+            stmt.setString(2, usuario.getNome());
+            stmt.setDate(3, java.sql.Date.valueOf(usuario.getDataDeNascimento()));
+            stmt.setString(4, usuario.getEmail());
+            stmt.setString(5, usuario.getSenha());
 
-            stmt.registerReturnParameter(5, java.sql.Types.INTEGER);
+            int linhas = stmt.executeUpdate();
 
-            stmt.executeUpdate();
-
-            ResultSet rs = stmt.getReturnResultSet();
-            if (rs.next()) {
-                usuario.setId(rs.getInt(1));
+            if (linhas > 0) {
+                System.out.println("Usuário cadastrado com ID: " + usuario.getId());
+                return usuario;
             }
 
-            System.out.println("Usuário cadastrado com ID: " + usuario.getId());
-            return usuario;
+            System.err.println("Nenhum usuário inserido!");
+            return null;
 
         } catch (SQLException e) {
             System.err.println("Erro ao salvar usuário!");
@@ -94,7 +113,6 @@ public class UsuarioDAO {
             return null;
         }
     }
-
 
     // Atualizar por id
     public UsuarioTO update(UsuarioTO usuario) {
@@ -127,7 +145,6 @@ public class UsuarioDAO {
         }
     }
 
-
     // Remover
     public boolean delete(int id) {
 
@@ -154,7 +171,6 @@ public class UsuarioDAO {
             return false;
         }
     }
-
 
     // Login
     public UsuarioTO login(String email, String senha) {
@@ -185,5 +201,26 @@ public class UsuarioDAO {
         }
 
         return null;
+    }
+
+    // Gera um ID de 6 dígitos e garante que é único na tabela
+    private int gerarIdUnico(Connection conn) throws SQLException {
+        String sqlCheck = "SELECT 1 FROM tb_usuario WHERE id = ?";
+
+        java.util.Random random = new java.util.Random();
+
+        while (true) {
+            // gera número entre 100000 e 999999
+            int usuario = 100000 + random.nextInt(900000);
+
+            try (PreparedStatement stmt = conn.prepareStatement(sqlCheck)) {
+                stmt.setInt(1, usuario);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (!rs.next()) {
+                        return usuario;
+                    }
+                }
+            }
+        }
     }
 }
