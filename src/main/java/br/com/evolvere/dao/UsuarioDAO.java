@@ -172,6 +172,33 @@ public class UsuarioDAO {
         }
     }
 
+    // Buscar usuário por e-mail
+    public UsuarioTO buscarPorEmail(String email) {
+        String sql = "SELECT id, nome, email, senha, data_nascimento FROM tb_usuario WHERE email = ?";
+
+        try (Connection conn = ConnectionFactory.abrirConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new UsuarioTO(
+                            rs.getInt("id"),
+                            rs.getString("nome"),
+                            rs.getDate("data_nascimento").toLocalDate(),
+                            rs.getString("email"),
+                            rs.getString("senha")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar usuário por e-mail!");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     // Login
     public UsuarioTO login(String email, String senha) {
 
