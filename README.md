@@ -33,7 +33,7 @@ Ela implementa conceitos de arquitetura em camadas inspirada em **DDD**, usando 
 
 ## 📌 Endpoints (Alguns exemplos de endpoint)
 
-### 🔐 Autenticação – `/auth`
+### 🔐 Autenticação  `/auth`
 
 | Método | Rota | Descrição | Códigos |
 |---|---|---|---|
@@ -42,14 +42,14 @@ Ela implementa conceitos de arquitetura em camadas inspirada em **DDD**, usando 
 | POST | `/auth/reenviar` | Reenvia código por e-mail | 200, 404 |
 
 
-### 👤 Usuário – `/usuario`
+### 👤 Usuário  `/usuario`
 
 | Método | Rota | Descrição | Códigos |
 |---|---|---|---|
 | GET | `/usuarios{email}` | Retorna dados do usuário | 200, 404 |
 
 
-### 🔄 Recuperação de Senha – `/recuperacao`
+### 🔄 Recuperação de Senha `/recuperacao`
 
 | Método | Rota | Descrição | Códigos |
 |---|---|---|---|
