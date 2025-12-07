@@ -1,4 +1,4 @@
-# 🌐 Evolvere API — Java / RESTful
+# 🌐 Evolvere API Java / RESTful
 
 ![Java](https://img.shields.io/badge/Java-21&17-blue)
 ![Quarkus](https://img.shields.io/badge/Framework-Quarkus-red)
