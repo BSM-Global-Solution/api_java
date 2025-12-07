@@ -1,62 +1,85 @@
-# evolvere
+# 🌐 Evolvere API — Java / RESTful
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+![Java](https://img.shields.io/badge/Java-21&17-blue)
+![Quarkus](https://img.shields.io/badge/Framework-Quarkus-red)
+![Database](https://img.shields.io/badge/DB-Oracle-yellow)
+![Status](https://img.shields.io/badge/Build-Running-success)
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+API Restful desenvolvida para o projeto **Evolvere**, uma plataforma inteligente focada em evolução profissional, conectando usuários a jornadas personalizadas com uso de Inteligência Artificial, mentores, recrutadores e oportunidades reais do mercado.
 
-## Running the application in dev mode
 
-You can run your application in dev mode that enables live coding using:
+---
 
-```shell script
-./mvnw quarkus:dev
-```
+## 🚀 Objetivo do Projeto
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+A API é responsável por gerenciar todo o fluxo de autenticação, cadastro, confirmação de acesso, recuperação de senha e gerenciamento de usuários.
 
-## Packaging and running the application
+Ela implementa conceitos de arquitetura em camadas inspirada em **DDD**, usando **Model, DAO, BO e Resource**, garantindo separação de responsabilidades e manutenibilidade.
 
-The application can be packaged using:
 
-```shell script
-./mvnw package
-```
+---
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+## ✨ Funcionalidades
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+- Cadastro de usuário
+- Envio e validação de código por e-mail
+- Confirmação de conta
+- Recuperação de senha
+- Reenvio de código
+- Consulta de dados do usuário
 
-If you want to build an _über-jar_, execute the following command:
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
+---
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+## 📌 Endpoints
 
-## Creating a native executable
+### 🔐 Autenticação – `/auth`
 
-You can create a native executable using:
+| Método | Rota | Descrição | Códigos |
+|---|---|---|---|
+| POST | `/auth/registro` | Criar usuário | 200, 400 |
+| POST | `/auth/confirmar` | Validar código de confirmação | 200, 400, 404 |
+| POST | `/auth/reenviar` | Reenvia código por e-mail | 200, 404 |
 
-```shell script
-./mvnw package -Dnative
-```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+### 👤 Usuário – `/usuario`
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
+| Método | Rota | Descrição | Códigos |
+|---|---|---|---|
+| GET | `/usuario/{email}` | Retorna dados do usuário | 200, 404 |
 
-You can then execute your native executable with: `./target/evolvere-1.0.0-SNAPSHOT-runner`
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+### 🔄 Recuperação de Senha – `/recuperacao`
 
-## Provided Code
+| Método | Rota | Descrição | Códigos |
+|---|---|---|---|
+| POST | `/recuperacao/enviar` | Envia código de recuperação | 200, 404 |
+| POST | `/recuperacao/redefinir` | Redefine senha | 200, 400, 404 |
 
-### REST
+---
 
-Easily start your REST Web Services
+## 🧩 Tecnologias
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+| Tipo       | Tecnologia |
+|-----------|------------|
+| Linguagem | Java       |
+| Framework | Quarkus    |
+| Banco     | MySQL      |
+| Conexão   | JDBC       |
+| Deploy    | Render     |
+
+---
+
+## 🌍 Deploy Produção
+
+https://api-java-evolvere.onrender.com/
+
+---
+
+## 📎 Links
+
+- **GitHub API:** https://github.com/BSM-Global-Solution/api_java
+- **Deploy API:** https://api-java-evolvere.onrender.com
+- **GitHub Projeto Evolvere:** https://github.com/BSM-Global-Solution/evolvere
+- **Projeto Evolvere:** https://evolvere-web.vercel.app/
+
