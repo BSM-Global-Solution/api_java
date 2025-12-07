@@ -31,7 +31,7 @@ Ela implementa conceitos de arquitetura em camadas inspirada em **DDD**, usando 
 
 ---
 
-## 📌 Endpoints
+## 📌 Endpoints (Alguns exemplos de endpoint)
 
 ### 🔐 Autenticação – `/auth`
 
@@ -46,7 +46,7 @@ Ela implementa conceitos de arquitetura em camadas inspirada em **DDD**, usando 
 
 | Método | Rota | Descrição | Códigos |
 |---|---|---|---|
-| GET | `/usuario/{email}` | Retorna dados do usuário | 200, 404 |
+| GET | `/usuarios{email}` | Retorna dados do usuário | 200, 404 |
 
 
 ### 🔄 Recuperação de Senha – `/recuperacao`
@@ -70,9 +70,24 @@ Ela implementa conceitos de arquitetura em camadas inspirada em **DDD**, usando 
 
 ---
 
-## 🌍 Deploy Produção
+## 🌍 Deploy em Produção
 
-https://api-java-evolvere.onrender.com/
+A API está publicada e disponível publicamente no seguinte endereço:
+
+➡️ **https://api-java-evolvere.onrender.com/**
+
+---
+### 🔎 Exemplos de uso
+
+📌 Listar usuários (exemplo de rota pública)  
+
+ https://api-java-evolvere.onrender.com/usuarios
+
+📌 Endpoint padrão de teste
+ 
+  https://api-java-evolvere.onrender.com/hello
+
+Obs: Algumas rotas exigem dados específicos, como email e códigos de confirmação via POST.
 
 ---
 
